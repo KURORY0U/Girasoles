@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Campo de Girasoles Realistas Animados</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #eee;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script>
+    // Configuración inicial del canvas
+    const canvas = document.getElementById('canvas');
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const ctx = canvas.getContext('2d');
+
+    /* ============================ */
+    /* Funciones de Dibujo          */
+    /* ============================ */
+
+    function drawBackground() {
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      gradient.addColorStop(0, "skyblue");
+      gradient.addColorStop(0.4, "lightblue");
+      gradient.addColorStop(0.5, "lightgreen");
+      gradient.addColorStop(1, "green");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function drawPetal(petalLength, petalWidth) {
+      ctx.save();
+      const grad = ctx.createLinearGradient(0, 0, 0, petalLength);
+      grad.addColorStop(0, "#FFFACD");
+      grad.addColorStop(1, "#FFA500");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.bezierCurveTo(
+        petalWidth, petalLength / 3,
+        petalWidth, 2 * petalLength / 3,
+        0, petalLength
+      );
+      ctx.bezierCurveTo(
+        -petalWidth, 2 * petalLength / 3,
+        -petalWidth, petalLength / 3,
+        0, 0
+      );
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawCenter(radius) {
+      ctx.save();
+      const grad = ctx.createRadialGradient(0, 0, radius * 0.1, 0, 0, radius);
+      grad.addColorStop(0, "#8B4513");
+      grad.addColorStop(1, "#4B2E0B");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.fill();
+      for (let i = 0; i < 300; i++) {
+        const angle = Math.random() * 2 * Math.PI;
+        const r = Math.random() * radius;
+        const dx = r * Math.cos(angle);
+        const dy = r * Math.sin(angle);
+        ctx.fillStyle = "rgba(0,0,0,0.1)";
+        ctx.beginPath();
+        ctx.arc(dx, dy, 1, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawStem(x, y, scale) {
+      ctx.save();
+      ctx.strokeStyle = "#228B22";
+      ctx.lineWidth = 14 * scale;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y + 120 * scale);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawLeaf(x, y, scale, rotation) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rotation);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(scale * 60, -scale * 20, scale * 20, scale * 60);
+      ctx.quadraticCurveTo(0, scale * 40, 0, 0);
+      ctx.fillStyle = "#228B22";
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawFlowerHead(x, y, scale, swayAngle) {
+      const petalCount  = 24;
+      const petalLength = 100 * scale;
+      const petalWidth  = 20 * scale;
+      const centerRadius = 40 * scale;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(swayAngle);
+      for (let i = 0; i < petalCount; i++) {
+        const angle = i * (2 * Math.PI / petalCount);
+        ctx.save();
+        ctx.rotate(angle);
+        drawPetal(petalLength, petalWidth);
+        ctx.restore();
+      }
+      drawCenter(centerRadius);
+      ctx.restore();
+    }
+
+    function drawSunflower(x, y, scale, swayAngle, headOffsetX) {
+      drawStem(x, y, scale);
+      drawLeaf(x, y + 40 * scale, scale, -Math.PI / 4);
+      drawLeaf(x, y + 70 * scale, scale, Math.PI / 4);
+      drawFlowerHead(x + headOffsetX, y - 120 * scale, scale, swayAngle);
+    }
+
+    function drawCloud(x, y, scale) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(scale, scale);
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      ctx.arc(0, 0, 20, 0, 2 * Math.PI);
+      ctx.arc(25, -10, 20, 0, 2 * Math.PI);
+      ctx.arc(50, 0, 20, 0, 2 * Math.PI);
+      ctx.arc(25, 10, 20, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawBee(x, y, wingAngle) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = "yellow";
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 10, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-5, 0);
+      ctx.lineTo(5, 0);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(-12, 0, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "rgba(200,200,255,0.6)";
+      ctx.save();
+      ctx.translate(-3, -6);
+      ctx.rotate(wingAngle);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 3, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      ctx.save();
+      ctx.translate(3, -6);
+      ctx.rotate(-wingAngle);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 3, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      ctx.restore();
+    }
+
+    // Función para mostrar el mensaje en el centro
+    function drawMessage() {
+      ctx.save();
+      ctx.fillStyle = "white";
+      ctx.font = "bold 28px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(
+        "Nath, se que te gustan los girasoles, así que hice este campito de girasoles para ti,",
+        canvas.width / 2,
+        canvas.height / 2 - 30
+      );
+      ctx.fillText(
+        "Feliz 21 de septiembre, espero que la pases bien, te quiere mucho Josue 😘",
+        canvas.width / 2,
+        canvas.height / 2 + 20
+      );
+      ctx.restore();
+    }
+
+    /* ============================ */
+    /* Inicialización de Elementos  */
+    /* ============================ */
+    let sunflowers = [];
+    function initSunflowers() {
+      const count = 12;
+      sunflowers = [];
+      for (let i = 0; i < count; i++) {
+        const x = Math.random() * canvas.width;
+        const y = canvas.height * 0.80 + Math.random() * (canvas.height * 0.15);
+        const scale = 0.7 + Math.random() * 0.5;
+        const phase = Math.random() * 2 * Math.PI;
+        const speed = 0.002 + Math.random() * 0.002;
+        const amplitude = 0.03;
+        sunflowers.push({ x, y, scale, phase, speed, amplitude });
+      }
+      sunflowers.sort((a, b) => a.scale - b.scale);
+    }
+
+    let clouds = [];
+    function initClouds() {
+      clouds = [
+        { x: 100, y: 80, scale: 1.2, speed: 0.03 },
+        { x: 400, y: 100, scale: 1,   speed: 0.03 },
+        { x: 750, y: 60, scale: 1.5, speed: 0.03 },
+        { x: 1200, y: 90, scale: 1.2, speed: 0.03 }
+      ];
+    }
+
+    let bee = { phase: Math.random() * 2 * Math.PI, speed: 0.001, orbitRadius: 250 };
+
+    /* ============================ */
+    /* Bucle de Animación           */
+    /* ============================ */
+    let startTime = Date.now();
+
+    function updateAndDraw() {
+      const elapsed = Date.now() - startTime;
+
+      for (let cloud of clouds) {
+        cloud.x += cloud.speed;
+        if (cloud.x > canvas.width + 50) {
+          cloud.x = -50;
+        }
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBackground();
+      drawMessage(); // <<< Mensaje en el centro
+
+      for (let cloud of clouds) {
+        drawCloud(cloud.x, cloud.y, cloud.scale);
+      }
+
+      for (let s of sunflowers) {
+        const baseSway = s.amplitude * Math.sin(elapsed * s.speed + s.phase);
+        const extraSway = 0.02 * Math.sin(elapsed * 0.007 + s.phase);
+        const swayAngle = baseSway + extraSway;
+        const headOffsetX = 3 * Math.sin(elapsed * 0.005 + s.phase + 1);
+        drawSunflower(s.x, s.y, s.scale, swayAngle, headOffsetX);
+      }
+
+      const beeWingAngle = 0.4 * Math.sin(elapsed * 0.005);
+      const beeOrbitAngle = elapsed * 0.001 + bee.phase;
+      const beeX = canvas.width / 2 + bee.orbitRadius * Math.cos(beeOrbitAngle);
+      const beeY = canvas.height * 0.75 + bee.orbitRadius * Math.sin(beeOrbitAngle);
+      drawBee(beeX, beeY, beeWingAngle);
+
+      requestAnimationFrame(updateAndDraw);
+    }
+
+    /* ============================ */
+    /* Inicialización y Resize      */
+    /* ============================ */
+    function init() {
+      initSunflowers();
+      initClouds();
+      updateAndDraw();
+    }
+    init();
+
+    window.addEventListener("resize", () => {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+      init();
+    });
+  </script>
+</body>
+</html>
